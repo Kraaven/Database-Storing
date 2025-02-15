@@ -1,22 +1,36 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(){
+int EvaluateFileName(char* f_name) {
+    // Check if the string ends with ".dat" or ".datB"
+    if (strcmp(f_name + strlen(f_name) - 5, ".datB") == 0){
+        return 0;
+    }
+    return 1;
+}
+
+int main()
+{
     char FileName[100];
 
-    do
+    printf("Enter a Data File\n=> ");
+    fgets(FileName, sizeof(FileName), stdin);
+    printf("Took %d Characters\n", strcspn(FileName, "\n"));
+    FileName[strcspn(FileName, "\n")] = '\0'; 
+    FILE *db_file = fopen(FileName, "r");
+
+    while (db_file == NULL || EvaluateFileName(FileName) == 1)
     {
-        printf("Give a String \n=>");
+        printf("File Does not Exist\n");
+        printf("Enter a Data File\n=> ");
         fgets(FileName, sizeof(FileName), stdin);
-        printf("Took %d Characters\n", strcspn(FileName, "\n")-1);
-        FileName[strcspn(FileName, "\n")] = '\0';
-
-    } while (strcmp(FileName, "") == 0 || strcmp(FileName, " ") == 0);
-
-    for (int i = 0; i < 500; i++)
-    {
-        printf("%d : %c\n", i, FileName[i]);
+        printf("Took %d Characters\n", strcspn(FileName, "\n"));
+        FileName[strcspn(FileName, "\n")] = '\0'; 
+        db_file = fopen(FileName, "r");
     }
-    
-    
+
+    printf("File %s Loaded", FileName);
 }
+
+
+
