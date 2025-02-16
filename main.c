@@ -11,6 +11,11 @@ int EvaluateFileName(char *f_name)
     return 1;
 }
 
+typedef struct{
+    int COL_Type;
+    char COL_Name[64];
+}Column;
+
 int main()
 {
 
@@ -71,6 +76,21 @@ int main()
         fread(&TableName, sizeof(TableName), 1, db_file);
 
         printf("Table Name : %s\nName char Count : %d", TableName, TableNameSize);
+        
+        int COLS_Count = 0;
+        fread(&COLS_Count, sizeof(int), 1 , db_file);
+        Column COL_Config[COLS_Count];
+        fread(&COL_Config, sizeof(Column), COLS_Count, db_file);
+        int DATA_StartPoint = ftell(db_file);
+
+        printf("\nColumn Configuration\n");
+        for (int i = 0; i < COLS_Count; i++)
+        {
+            printf("-----\nName: %s\nType: %d\n", COL_Config[i].COL_Name, COL_Config[i].COL_Type);
+        }
+
+
+
         fclose(db_file);
     }
     else
@@ -81,7 +101,6 @@ int main()
         int namesize = strcspn(TableName, "\n");
         TableName[strcspn(TableName, "\n")] = '\0';
 
-
         char TrueName[namesize + 4];
         for (int i = 0; i < namesize; i++)
         {
@@ -91,14 +110,61 @@ int main()
         TrueName[namesize + 1] = 't';
         TrueName[namesize + 2] = 'b';
         TrueName[namesize + 3] = '\0';
-        
 
-        printf("\n Given Name : %s\nTrueName %s", TableName, TrueName);
+        printf("\nGiven Name : %s\nTrueName %s", TableName, TrueName);
 
         db_file = fopen(TrueName, "wb+");
 
         fwrite(&namesize, sizeof(int), 1, db_file);
         fwrite(&TableName, sizeof(char), namesize, db_file);
+        printf("File Created\n");
+        printf("Setup Table columns\nWarning : Table can be configured only once. Be careful\n");
+        char COLS_Input[8];
+
+        printf("Enter Number of Columns\n=> ");
+        scanf("%s", COLS_Input);
+        option = strtoll(COLS_Input, &errorptr, 10);
+
+        while (*errorptr != '\0')
+        {
+            system("clear");
+            printf("Invalid Number. Please Enter Number of Columns\n=> ");
+            errorptr = NULL;
+            while (getchar() != '\n')
+                ;
+
+            scanf("%s", COLS_Input);
+            option = strtoll(COLS_Input, &errorptr, 10);
+        }
+        while (getchar() != '\n')
+            ;
+
+        int COLS = option;
+
+        printf("Number of cols entered : %d\n", COLS);
+        system("clear");
+        Column configs[COLS];
+
+        printf("Entering Column Configuration\nWarning : Table can be configured only once. Be careful\nFormat : [Column Name] [Column Type]\nKeys: \n[Int -> 1]\n[String_64 -> 2]\n");
+
+        for (int i = 0; i < COLS; i++)
+        {
+            printf("Configure Column[%d]\n=> ", i);
+            scanf("%s %d", configs[i].COL_Name, &configs[i].COL_Type);
+        }
+
+        printf("\n");
+        for (int i = 0; i < COLS; i++)
+        {
+            printf("-----\nName: %s\nType: %d\n", configs[i].COL_Name, configs[i].COL_Type);
+        }
+
+        fwrite(&COLS, sizeof(int), 1, db_file);
+        fwrite(&configs, sizeof(Column), COLS, db_file);
+        
+        
+        
+
         fclose(db_file);
     }
 }
